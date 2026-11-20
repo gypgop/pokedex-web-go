@@ -35,7 +35,7 @@ func GetPokemon(id int) (models.Pokemon, error) {
 }
 
 func GetAllPokemon() ([]models.Pokemon, error) {
-	endpoint := "https://tyradex.app/api/v1/"
+	endpoint := "https://tyradex.app/api/v1/pokemon"
 	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return []models.Pokemon{}, err
