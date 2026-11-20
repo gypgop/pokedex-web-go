@@ -1,40 +1,57 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
+	"initial/models"
 	"net/http"
 	"time"
 )
 
-var client = &http.Client{
-	Timeout: 5 * time.Second,
-}
-
 const baseURL = "https://tyradex.app/api/v1"
 
-endpoint := baseURL + "/pokemon/25"
+var client = &http.Client{Timeout: 5 * time.Second}
 
-request, err := http.NewRequest(http.MethodGet, endpoint, nil)
-if err != nil {
-log.Fatalf("création de la requête : %v", err)
+func GetPokemon(id int) (models.Pokemon, error) {
+	endpoint := fmt.Sprintf("%s/pokemon/%d", baseURL, id)
+	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return models.Pokemon{}, err
+	}
+
+	request.Header.Set("User-Agent", "DataDex/1.0")
+
+	response, err := client.Do(request)
+	if err != nil {
+		return models.Pokemon{}, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return models.Pokemon{}, fmt.Errorf("réponse inattendue : %s", response.Status)
+	}
+	var pokemon models.Pokemon
+	err = json.NewDecoder(response.Body).Decode(&pokemon)
+	return pokemon, err
 }
 
-response, err := client.Do(request)
-if err != nil {
-log.Fatalf("envoi de la requête : %v", err)
+func GetAllPokemon() ([]models.Pokemon, error) {
+	endpoint := "https://tyradex.app/api/v1/"
+	request, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return []models.Pokemon{}, err
+	}
+
+	request.Header.Set("User-Agent", "DataDex/1.0")
+
+	response, err := client.Do(request)
+	if err != nil {
+		return []models.Pokemon{}, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return []models.Pokemon{}, fmt.Errorf("réponse inattendue : %s", response.Status)
+	}
+	var pokemon []models.Pokemon
+	err = json.NewDecoder(response.Body).Decode(&pokemon)
+	return pokemon, err
 }
-
-defer response.Body.Close()
-
-if response.StatusCode != http.StatusOK {
-log.Fatalf("réponse inattendue : %s", response.Status)
-}
-
-var pokemon Pokemon
-
-err = json.NewDecoder(response.Body).Decode(&pokemon)
-if err != nil {
-
-log.Fatalf("décodage de la réponse : %v", err)
-}
-
-fmt.Printf("#%d %s\n", pokemon.ID, pokemon.Name.Fr)
