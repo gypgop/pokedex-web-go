@@ -1,1 +1,2 @@
-# pokedex-web-go
+# pokedex
+pokedex pour apprendre a utiliser une API
