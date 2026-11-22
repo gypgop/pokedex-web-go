@@ -14,3 +14,12 @@ pokedex pour apprendre a utiliser une API
 </body>
 </html>
 -----------pour la base de chaque fichier HTML------------
+
+------------------IA---------------------
+import des libraries dans controller.go
+-----------------------------------------
+
+-----------------IA---------------------------
+me guider un peu sur le setup du serveur local
+----------------------------------------------
+
