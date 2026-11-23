@@ -1,6 +1,10 @@
 # pokedex
 pokedex pour apprendre a utiliser une API
 
+pour commencer lancer le serveur local avec la commande "go run ."
+ensuite chercher dans un moteur de recherche http://localhost:8080/
+enfin chercher le pokemon souhaitais au travers de son ID ou de son nom :D
+
 QOL : Quality Of Life
 
 ------------------IA--QOL-----------------
