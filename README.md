@@ -1,25 +1,21 @@
 # pokedex
 pokedex pour apprendre a utiliser une API
 
---------------------------IA-----------------------------
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Pokédex</title>
-</head>
-<body>
+QOL : Quality Of Life
 
-</body>
-</html>
------------pour la base de chaque fichier HTML------------
-
-------------------IA---------------------
+------------------IA--QOL-----------------
 import des libraries dans controller.go
------------------------------------------
+------------------------------------------
 
------------------IA---------------------------
+-----------------IA--aide----------------------
 me guider un peu sur le setup du serveur local
-----------------------------------------------
+-----------------------------------------------
 
+---------------IA--Fix----------------------
+il affichais le code du html au lieu
+de juste la page a cause des fmt.Fprintf
+--------------------------------------------
+
+-------IA--QOL-----
+		CSS
+-------------------

@@ -1,11 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Pokédex</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.Name.Fr}}</title>
+	<link rel="icon" size="32x23" href="{{.Sprites.Regular}}">
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-	<h1>o/</h1>
+	<div class="ui-widget">
+<form action="./pokemon" method="get">
+  <input type="search" name="pokemonId">
+  <input type="submit" value="🔎">
+</form>
+</div>
+    <main class="pokemon-card">
+        <p>#{{.Id}}</p>
+        <h1>{{.Name.Fr}}</h1>
+        <p>{{.Category}}</p>
+
+        <img src="{{.Sprites.Regular}}" alt="{{.Name.Fr}}">
+
+        <div class="types">
+            {{range .Types}}
+                <span class="type">{{.Name}}</span>
+            {{end}}
+        </div>
+    </main>
 </body>
 </html>

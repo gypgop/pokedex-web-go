@@ -1,18 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
+	"initial/api"
 	"log"
 	"net/http"
 
-	"initial/api"
 	// "initial/controllers"
 	"initial/models"
 	"strconv"
 )
 
 func main() {
-	// http.HandleFunc("/pokemon", controllers.PokemonHandler)
+	http.Handle("/assets/",
+		http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -24,11 +26,8 @@ func main() {
 	var id string
 	var pokemon models.Pokemon
 
-	log.Printf("aaaa")
 	http.HandleFunc("/pokemon", func(w http.ResponseWriter, r *http.Request) {
 		id = r.URL.Query().Get("pokemonId")
-
-		fmt.Fprintf(w, "pokemonId reçu: %s\n", id)
 
 		if id[0] >= '0' && id[0] <= '9' {
 			idInt, _ := strconv.Atoi(id)
@@ -38,10 +37,21 @@ func main() {
 			pokemon, _ = api.GetPokemonByName(id)
 
 		} else {
-			fmt.Fprintf(w, "erreur\n")
+			// fmt.Fprintf(w, "erreur\n") //todo
 		}
 
-		fmt.Fprintf(w, "Le pokemon est : %+v\n", pokemon)
+		page, err := template.ParseFiles("templates/pokemon.html")
+
+		if err != nil {
+			http.Error(w, "marche pas", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		if err := page.Execute(w, pokemon); err != nil {
+			http.Error(w, "marche pas", http.StatusInternalServerError)
+		}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
