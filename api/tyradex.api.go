@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"initial/models"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 const baseURL = "https://tyradex.app/api/v1"
 
 var client = &http.Client{Timeout: 5 * time.Second}
+
+var ErrPokemonNotFound = errors.New("pokemon not found")
 
 func GetPokemonByName(id string) (models.Pokemon, error) {
 	endpoint := fmt.Sprintf("%s/pokemon/%s", baseURL, id)
@@ -26,6 +29,9 @@ func GetPokemonByName(id string) (models.Pokemon, error) {
 		return models.Pokemon{}, err
 	}
 	defer response.Body.Close()
+	if response.StatusCode == http.StatusNotFound {
+		return models.Pokemon{}, ErrPokemonNotFound
+	}
 	if response.StatusCode != http.StatusOK {
 		return models.Pokemon{}, fmt.Errorf("réponse inattendue : %s", response.Status)
 	}
@@ -48,6 +54,9 @@ func GetPokemonById(id int) (models.Pokemon, error) {
 		return models.Pokemon{}, err
 	}
 	defer response.Body.Close()
+	if response.StatusCode == http.StatusNotFound {
+		return models.Pokemon{}, ErrPokemonNotFound
+	}
 	if response.StatusCode != http.StatusOK {
 		return models.Pokemon{}, fmt.Errorf("réponse inattendue : %s", response.Status)
 	}

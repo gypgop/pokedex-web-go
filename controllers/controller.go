@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"bytes"
-	"encoding/json"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,7 +13,13 @@ import (
 	"initial/models"
 )
 
-func PokemonHandler(w http.ResponseWriter, r *http.Request) {
+func PokemonPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		renderError(w, http.StatusMethodNotAllowed, "Cette méthode n'est pas autorisée.")
+		return
+	}
+
 	pokemonID := strings.TrimSpace(r.URL.Query().Get("pokemonId"))
 	if pokemonID == "" {
 		renderError(w, http.StatusBadRequest, "Saisis un numéro ou un nom de Pokémon.")
@@ -22,24 +28,55 @@ func PokemonHandler(w http.ResponseWriter, r *http.Request) {
 
 	var pokemon models.Pokemon
 	var err error
-	if id, parseErr := strconv.Atoi(pokemonID); parseErr == nil {
-		if id <= 0 {
-			renderError(w, http.StatusBadRequest, "Le numéro du Pokémon doit être positif.")
+	id, parseErr := strconv.Atoi(pokemonID)
+	isNameSearch := parseErr != nil
+	if parseErr == nil {
+		if id < 1 || id > 1025 {
+			renderError(w, http.StatusNotFound, "Ce numéro de Pokémon n'existe pas.")
 			return
 		}
 		pokemon, err = api.GetPokemonById(id)
+	} else if strings.Trim(pokemonID, "0123456789") == "" {
+		renderError(w, http.StatusNotFound, "Ce numéro de Pokémon n'existe pas.")
+		return
 	} else {
 		pokemon, err = api.GetPokemonByName(pokemonID)
 	}
 	if err != nil {
 		log.Printf("échec de récupération du Pokémon %q : %v", pokemonID, err)
-		renderError(w, http.StatusBadGateway, "Impossible de récupérer ce Pokémon.")
+		if isNameSearch && errors.Is(err, api.ErrPokemonNotFound) {
+			renderError(w, http.StatusBadRequest, "Ce nom de Pokémon n'existe pas.")
+			return
+		}
+		renderError(w, http.StatusServiceUnavailable, "Le service est momentanément indisponible.")
+		return
+	}
+	if pokemon.Id == 0 {
+		if isNameSearch {
+			renderError(w, http.StatusBadRequest, "Ce nom de Pokémon n'existe pas.")
+		} else {
+			renderError(w, http.StatusServiceUnavailable, "Le service est momentanément indisponible.")
+		}
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if err := json.NewEncoder(w).Encode(pokemon); err != nil {
-		log.Printf("échec d'envoi de la réponse : %v", err)
+	page, err := template.ParseFiles("templates/pokemon.html")
+	if err != nil {
+		log.Printf("impossible de charger la page Pokémon : %v", err)
+		renderError(w, http.StatusInternalServerError, "Impossible de charger la page du Pokémon.")
+		return
+	}
+
+	var body bytes.Buffer
+	if err := page.Execute(&body, pokemon); err != nil {
+		log.Printf("impossible de générer la page Pokémon : %v", err)
+		renderError(w, http.StatusInternalServerError, "Impossible de générer la page du Pokémon.")
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	if _, err := body.WriteTo(w); err != nil {
+		log.Printf("impossible d'envoyer la page Pokémon : %v", err)
 	}
 }
 
@@ -53,8 +90,9 @@ func renderError(w http.ResponseWriter, status int, message string) {
 
 	var body bytes.Buffer
 	if err := page.Execute(&body, struct {
-		Message string
-	}{Message: message}); err != nil {
+		StatusCode int
+		Message    string
+	}{StatusCode: status, Message: message}); err != nil {
 		log.Printf("impossible de générer la page d'erreur : %v", err)
 		http.Error(w, "Erreur interne du serveur.", http.StatusInternalServerError)
 		return

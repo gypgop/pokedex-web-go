@@ -3,10 +3,12 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/style.css">
 	<title>Erreur - Pokédex</title>
 </head>
 <body>
-	<h1>Une erreur est survenue</h1>
+	<h1>{{.StatusCode}}</h1>
+	<h2>Une erreur est survenue</h2>
 	<p>{{.Message}}</p>
 	<a href="/">Retour au Pokédex</a>
 </body>
